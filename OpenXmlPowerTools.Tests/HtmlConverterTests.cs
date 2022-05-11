@@ -16,6 +16,8 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
 using OpenXmlPowerTools;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
 using Xunit;
 
 #if DO_CONVERSION_VIA_WORD
@@ -205,29 +207,30 @@ namespace OxPt
                                 localDirInfo.Create();
                             ++imageCounter;
                             string extension = imageInfo.ContentType.Split('/')[1].ToLower();
-                            ImageFormat imageFormat = null;
+                            IImageFormat imageFormat = null;
                             if (extension == "png")
                             {
                                 // Convert png to jpeg.
                                 extension = "gif";
-                                imageFormat = ImageFormat.Gif;
+                                imageFormat = SixLabors.ImageSharp.Formats.Gif.GifFormat.Instance;
                             }
                             else if (extension == "gif")
-                                imageFormat = ImageFormat.Gif;
+                                imageFormat = SixLabors.ImageSharp.Formats.Gif.GifFormat.Instance;
                             else if (extension == "bmp")
-                                imageFormat = ImageFormat.Bmp;
+                                imageFormat = SixLabors.ImageSharp.Formats.Bmp.BmpFormat.Instance;
                             else if (extension == "jpeg")
-                                imageFormat = ImageFormat.Jpeg;
+                                imageFormat = SixLabors.ImageSharp.Formats.Jpeg.JpegFormat.Instance;
                             else if (extension == "tiff")
                             {
                                 // Convert tiff to gif.
                                 extension = "gif";
-                                imageFormat = ImageFormat.Gif;
+                                imageFormat = SixLabors.ImageSharp.Formats.Gif.GifFormat.Instance;
                             }
                             else if (extension == "x-wmf")
                             {
                                 extension = "wmf";
-                                imageFormat = ImageFormat.Wmf;
+                                // 用这个代替先，ImageSharp不支持这种格式。
+                                imageFormat = SixLabors.ImageSharp.Formats.Bmp.BmpFormat.Instance;
                             }
 
                             // If the image format isn't one that we expect, ignore it,
@@ -239,7 +242,8 @@ namespace OxPt
                                 imageCounter.ToString() + "." + extension;
                             try
                             {
-                                imageInfo.Bitmap.Save(imageFileName, imageFormat);
+                                using var fileStream = new FileStream(imageFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+                                imageInfo.Image.Save(fileStream, imageFormat);
                             }
                             catch (System.Runtime.InteropServices.ExternalException)
                             {
@@ -298,29 +302,30 @@ namespace OxPt
                                 localDirInfo.Create();
                             ++imageCounter;
                             string extension = imageInfo.ContentType.Split('/')[1].ToLower();
-                            ImageFormat imageFormat = null;
+                            IImageFormat imageFormat = null;
                             if (extension == "png")
                             {
                                 // Convert png to jpeg.
                                 extension = "gif";
-                                imageFormat = ImageFormat.Gif;
+                                imageFormat = SixLabors.ImageSharp.Formats.Gif.GifFormat.Instance;
                             }
                             else if (extension == "gif")
-                                imageFormat = ImageFormat.Gif;
+                                imageFormat = SixLabors.ImageSharp.Formats.Gif.GifFormat.Instance;
                             else if (extension == "bmp")
-                                imageFormat = ImageFormat.Bmp;
+                                imageFormat = SixLabors.ImageSharp.Formats.Bmp.BmpFormat.Instance;
                             else if (extension == "jpeg")
-                                imageFormat = ImageFormat.Jpeg;
+                                imageFormat = SixLabors.ImageSharp.Formats.Jpeg.JpegFormat.Instance;
                             else if (extension == "tiff")
                             {
                                 // Convert tiff to gif.
                                 extension = "gif";
-                                imageFormat = ImageFormat.Gif;
+                                imageFormat = SixLabors.ImageSharp.Formats.Gif.GifFormat.Instance;
                             }
                             else if (extension == "x-wmf")
                             {
                                 extension = "wmf";
-                                imageFormat = ImageFormat.Wmf;
+                                // 用这个代替先，ImageSharp不支持这种格式。
+                                imageFormat = SixLabors.ImageSharp.Formats.Bmp.BmpFormat.Instance;
                             }
 
                             // If the image format isn't one that we expect, ignore it,
@@ -332,7 +337,8 @@ namespace OxPt
                                 imageCounter.ToString() + "." + extension;
                             try
                             {
-                                imageInfo.Bitmap.Save(imageFileName, imageFormat);
+                                using var fileStream = new FileStream(imageFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+                                imageInfo.Image.Save(fileStream, imageFormat);
                             }
                             catch (System.Runtime.InteropServices.ExternalException)
                             {

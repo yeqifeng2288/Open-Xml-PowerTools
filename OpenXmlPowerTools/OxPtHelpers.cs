@@ -15,6 +15,8 @@ using OpenXmlPowerTools;
 using System.Text;
 using DocumentFormat.OpenXml;
 using System.Drawing.Imaging;
+using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp;
 
 namespace OpenXmlPowerTools
 {
@@ -374,29 +376,30 @@ AAsACwDBAgAAbCwAAAAA";
                                 localDirInfo.Create();
                             ++imageCounter;
                             string extension = imageInfo.ContentType.Split('/')[1].ToLower();
-                            ImageFormat imageFormat = null;
+                            IImageFormat imageFormat = null;
                             if (extension == "png")
                             {
                                 // Convert png to jpeg.
                                 extension = "gif";
-                                imageFormat = ImageFormat.Gif;
+                                imageFormat = SixLabors.ImageSharp.Formats.Gif.GifFormat.Instance;
                             }
                             else if (extension == "gif")
-                                imageFormat = ImageFormat.Gif;
+                                imageFormat = SixLabors.ImageSharp.Formats.Gif.GifFormat.Instance;
                             else if (extension == "bmp")
-                                imageFormat = ImageFormat.Bmp;
+                                imageFormat = SixLabors.ImageSharp.Formats.Bmp.BmpFormat.Instance;
                             else if (extension == "jpeg")
-                                imageFormat = ImageFormat.Jpeg;
+                                imageFormat = SixLabors.ImageSharp.Formats.Jpeg.JpegFormat.Instance;
                             else if (extension == "tiff")
                             {
                                 // Convert tiff to gif.
                                 extension = "gif";
-                                imageFormat = ImageFormat.Gif;
+                                imageFormat = SixLabors.ImageSharp.Formats.Gif.GifFormat.Instance;
                             }
                             else if (extension == "x-wmf")
                             {
                                 extension = "wmf";
-                                imageFormat = ImageFormat.Wmf;
+                                // 用这个代替先，ImageSharp不支持这种格式。
+                                imageFormat = SixLabors.ImageSharp.Formats.Bmp.BmpFormat.Instance;
                             }
 
                             // If the image format isn't one that we expect, ignore it,
@@ -408,7 +411,8 @@ AAsACwDBAgAAbCwAAAAA";
                                 imageCounter.ToString() + "." + extension;
                             try
                             {
-                                imageInfo.Bitmap.Save(imageFileName, imageFormat);
+                                using var fileStream = new FileStream(imageFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+                                imageInfo.Image.Save(fileStream, imageFormat);
                             }
                             catch (System.Runtime.InteropServices.ExternalException)
                             {
@@ -558,39 +562,39 @@ AAsACwDBAgAAbCwAAAAA";
     {
         public string FileName;
 
-	    public int ActiveX;
-	    public int AltChunk;
-	    public int AsciiCharCount;
-	    public int AsciiRunCount;
-	    public int AverageParagraphLength;
-	    public int ComplexField;
-	    public int ContentControlCount;
-	    public XmlDocument ContentControls;
-	    public int CSCharCount;
-	    public int CSRunCount;
-	    public bool DocumentProtection;
-	    public int EastAsiaCharCount;
-	    public int EastAsiaRunCount;
-	    public int ElementCount;
-	    public bool EmbeddedXlsx;
-	    public int HAnsiCharCount;
-	    public int HAnsiRunCount;
-	    public int Hyperlink;
-	    public bool InvalidSaveThroughXslt;
-	    public string Languages;
-	    public int LegacyFrame;
-	    public int MultiFontRun;
-	    public string NumberingFormatList;
-	    public int ReferenceToNullImage;
-	    public bool RevisionTracking;
-	    public int RunCount;
-	    public int SimpleField;
-	    public XmlDocument StyleHierarchy;
-	    public int SubDocument;
-	    public int Table;
-	    public int TextBox;
-	    public bool TrackRevisionsEnabled;
-	    public bool Valid;
+        public int ActiveX;
+        public int AltChunk;
+        public int AsciiCharCount;
+        public int AsciiRunCount;
+        public int AverageParagraphLength;
+        public int ComplexField;
+        public int ContentControlCount;
+        public XmlDocument ContentControls;
+        public int CSCharCount;
+        public int CSRunCount;
+        public bool DocumentProtection;
+        public int EastAsiaCharCount;
+        public int EastAsiaRunCount;
+        public int ElementCount;
+        public bool EmbeddedXlsx;
+        public int HAnsiCharCount;
+        public int HAnsiRunCount;
+        public int Hyperlink;
+        public bool InvalidSaveThroughXslt;
+        public string Languages;
+        public int LegacyFrame;
+        public int MultiFontRun;
+        public string NumberingFormatList;
+        public int ReferenceToNullImage;
+        public bool RevisionTracking;
+        public int RunCount;
+        public int SimpleField;
+        public XmlDocument StyleHierarchy;
+        public int SubDocument;
+        public int Table;
+        public int TextBox;
+        public bool TrackRevisionsEnabled;
+        public bool Valid;
         public int ZeroLengthText;
     }
 
@@ -606,40 +610,40 @@ AAsACwDBAgAAbCwAAAAA";
             DocxMetrics metrics = new DocxMetrics();
             metrics.FileName = wmlDoc.FileName;
 
-            metrics.StyleHierarchy         = GetXmlDocumentForMetrics(metricsXml, H.StyleHierarchy);
-            metrics.ContentControls        = GetXmlDocumentForMetrics(metricsXml, H.Parts);
-            metrics.TextBox                = GetIntForMetrics(metricsXml, H.TextBox);
-            metrics.ContentControlCount    = GetIntForMetrics(metricsXml, H.ContentControl);
-            metrics.ComplexField           = GetIntForMetrics(metricsXml, H.ComplexField);
-            metrics.SimpleField            = GetIntForMetrics(metricsXml, H.SimpleField);
-            metrics.AltChunk               = GetIntForMetrics(metricsXml, H.AltChunk);
-            metrics.Table                  = GetIntForMetrics(metricsXml, H.Table);
-            metrics.Hyperlink              = GetIntForMetrics(metricsXml, H.Hyperlink);
-            metrics.LegacyFrame            = GetIntForMetrics(metricsXml, H.LegacyFrame);
-            metrics.ActiveX                = GetIntForMetrics(metricsXml, H.ActiveX);
-            metrics.SubDocument            = GetIntForMetrics(metricsXml, H.SubDocument);
-            metrics.ReferenceToNullImage   = GetIntForMetrics(metricsXml, H.ReferenceToNullImage);
-            metrics.ElementCount           = GetIntForMetrics(metricsXml, H.ElementCount);
+            metrics.StyleHierarchy = GetXmlDocumentForMetrics(metricsXml, H.StyleHierarchy);
+            metrics.ContentControls = GetXmlDocumentForMetrics(metricsXml, H.Parts);
+            metrics.TextBox = GetIntForMetrics(metricsXml, H.TextBox);
+            metrics.ContentControlCount = GetIntForMetrics(metricsXml, H.ContentControl);
+            metrics.ComplexField = GetIntForMetrics(metricsXml, H.ComplexField);
+            metrics.SimpleField = GetIntForMetrics(metricsXml, H.SimpleField);
+            metrics.AltChunk = GetIntForMetrics(metricsXml, H.AltChunk);
+            metrics.Table = GetIntForMetrics(metricsXml, H.Table);
+            metrics.Hyperlink = GetIntForMetrics(metricsXml, H.Hyperlink);
+            metrics.LegacyFrame = GetIntForMetrics(metricsXml, H.LegacyFrame);
+            metrics.ActiveX = GetIntForMetrics(metricsXml, H.ActiveX);
+            metrics.SubDocument = GetIntForMetrics(metricsXml, H.SubDocument);
+            metrics.ReferenceToNullImage = GetIntForMetrics(metricsXml, H.ReferenceToNullImage);
+            metrics.ElementCount = GetIntForMetrics(metricsXml, H.ElementCount);
             metrics.AverageParagraphLength = GetIntForMetrics(metricsXml, H.AverageParagraphLength);
-            metrics.RunCount               = GetIntForMetrics(metricsXml, H.RunCount);
-            metrics.ZeroLengthText         = GetIntForMetrics(metricsXml, H.ZeroLengthText);
-            metrics.MultiFontRun           = GetIntForMetrics(metricsXml, H.MultiFontRun);
-            metrics.AsciiCharCount         = GetIntForMetrics(metricsXml, H.AsciiCharCount);
-            metrics.CSCharCount            = GetIntForMetrics(metricsXml, H.CSCharCount);
-            metrics.EastAsiaCharCount      = GetIntForMetrics(metricsXml, H.EastAsiaCharCount);
-            metrics.HAnsiCharCount         = GetIntForMetrics(metricsXml, H.HAnsiCharCount);
-            metrics.AsciiRunCount          = GetIntForMetrics(metricsXml, H.AsciiRunCount);
-            metrics.CSRunCount             = GetIntForMetrics(metricsXml, H.CSRunCount);
-            metrics.EastAsiaRunCount       = GetIntForMetrics(metricsXml, H.EastAsiaRunCount);
-            metrics.HAnsiRunCount          = GetIntForMetrics(metricsXml, H.HAnsiRunCount);
-            metrics.RevisionTracking       = GetBoolForMetrics(metricsXml, H.RevisionTracking);
-            metrics.EmbeddedXlsx           = GetBoolForMetrics(metricsXml, H.EmbeddedXlsx);
+            metrics.RunCount = GetIntForMetrics(metricsXml, H.RunCount);
+            metrics.ZeroLengthText = GetIntForMetrics(metricsXml, H.ZeroLengthText);
+            metrics.MultiFontRun = GetIntForMetrics(metricsXml, H.MultiFontRun);
+            metrics.AsciiCharCount = GetIntForMetrics(metricsXml, H.AsciiCharCount);
+            metrics.CSCharCount = GetIntForMetrics(metricsXml, H.CSCharCount);
+            metrics.EastAsiaCharCount = GetIntForMetrics(metricsXml, H.EastAsiaCharCount);
+            metrics.HAnsiCharCount = GetIntForMetrics(metricsXml, H.HAnsiCharCount);
+            metrics.AsciiRunCount = GetIntForMetrics(metricsXml, H.AsciiRunCount);
+            metrics.CSRunCount = GetIntForMetrics(metricsXml, H.CSRunCount);
+            metrics.EastAsiaRunCount = GetIntForMetrics(metricsXml, H.EastAsiaRunCount);
+            metrics.HAnsiRunCount = GetIntForMetrics(metricsXml, H.HAnsiRunCount);
+            metrics.RevisionTracking = GetBoolForMetrics(metricsXml, H.RevisionTracking);
+            metrics.EmbeddedXlsx = GetBoolForMetrics(metricsXml, H.EmbeddedXlsx);
             metrics.InvalidSaveThroughXslt = GetBoolForMetrics(metricsXml, H.InvalidSaveThroughXslt);
-            metrics.TrackRevisionsEnabled  = GetBoolForMetrics(metricsXml, H.TrackRevisionsEnabled);
-            metrics.DocumentProtection     = GetBoolForMetrics(metricsXml, H.DocumentProtection);
-            metrics.Valid                  = GetBoolForMetrics(metricsXml, H.Valid);
-            metrics.Languages              = GetStringForMetrics(metricsXml, H.Languages);
-            metrics.NumberingFormatList    = GetStringForMetrics(metricsXml, H.NumberingFormatList);
+            metrics.TrackRevisionsEnabled = GetBoolForMetrics(metricsXml, H.TrackRevisionsEnabled);
+            metrics.DocumentProtection = GetBoolForMetrics(metricsXml, H.DocumentProtection);
+            metrics.Valid = GetBoolForMetrics(metricsXml, H.Valid);
+            metrics.Languages = GetStringForMetrics(metricsXml, H.Languages);
+            metrics.NumberingFormatList = GetStringForMetrics(metricsXml, H.NumberingFormatList);
 
             return metrics;
         }

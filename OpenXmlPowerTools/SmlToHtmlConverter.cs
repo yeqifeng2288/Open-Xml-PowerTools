@@ -11,6 +11,7 @@ using System.Text;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
 using System.IO;
+using SixLabors.Fonts;
 
 namespace OpenXmlPowerTools
 {
@@ -236,7 +237,7 @@ namespace OpenXmlPowerTools
                 if (_knownFamilies == null)
                 {
                     _knownFamilies = new HashSet<string>();
-                    var families = FontFamily.Families;
+                    var families = new FontCollection().Families;
                     foreach (var fam in families)
                         _knownFamilies.Add(fam.Name);
                 }

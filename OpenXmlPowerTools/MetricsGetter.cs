@@ -1,17 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
+using System.Globalization;
 using System.IO.Packaging;
-using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Validation;
-using System.Globalization;
+using SixLabors.Fonts;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace OpenXmlPowerTools
 {
@@ -25,10 +23,12 @@ namespace OpenXmlPowerTools
 
     public class MetricsGetter
     {
-        private static Lazy<Graphics> Graphics { get; } = new Lazy<Graphics>(() =>
+        static IEnumerable<FontFamily> FontFamilies = new FontCollection().Families;
+
+        private static Lazy<Image> Graphics { get; } = new Lazy<Image>(() =>
         {
-            Image image = new Bitmap(1, 1);
-            return System.Drawing.Graphics.FromImage(image);
+            Image<Argb32> image = new Image<Argb32>(1, 1);
+            return image;
         });
 
         public static XElement GetMetrics(string fileName, MetricsGetterSettings settings)
@@ -112,12 +112,10 @@ namespace OpenXmlPowerTools
         {
             try
             {
-                using (var f = new Font(ff, (float)sz / 2f, fs))
-                {
-                    var proposedSize = new Size(int.MaxValue, int.MaxValue);
-                    var sf = Graphics.Value.MeasureString(text, f, proposedSize);
-                    return (int) sf.Width;
-                }
+                var f = new Font(ff, (float)sz / 2f, fs);
+                var proposedSize = new Size(int.MaxValue, int.MaxValue);
+                var fontSize = TextMeasurer.Measure("your Text", new TextOptions(f));
+                return (int)fontSize.Width;
             }
             catch
             {
@@ -149,7 +147,7 @@ namespace OpenXmlPowerTools
                     {
                         // if both regular and bold fail, then get metrics for Times New Roman
                         // use the original FontStyle (in fs)
-                        var ff2 = new FontFamily("Times New Roman");
+                        var ff2 = FontFamilies.First(o => o.Name == "Times New Roman");
                         return _getTextWidth(ff2, fs, sz, text);
                     }
                 }
@@ -226,7 +224,7 @@ namespace OpenXmlPowerTools
                             .Distinct()
                             .ToList();
                         foreach (var item in namespaces)
-		                    uniqueNamespaces.Add(item);
+                            uniqueNamespaces.Add(item);
                     }
                     // if catch exception, forget about it.  Just trying to get a most complete survey possible of all namespaces in all documents.
                     // if caught exception, chances are the document is bad anyway.
@@ -886,30 +884,30 @@ namespace OpenXmlPowerTools
                     var isGroup = element.Elements(W.sdtPr).Elements(W.group).Any();
                     var isPicture = element.Elements(W.sdtPr).Elements(W.picture).Any();
                     var isRichText = element.Elements(W.sdtPr).Elements(W.richText).Any() ||
-                        (! isText && 
-                        ! isBibliography && 
-                        ! isCitation && 
-                        ! isComboBox && 
-                        ! isDate && 
-                        ! isDocPartList && 
-                        ! isDocPartObj && 
-                        ! isDropDownList && 
-                        ! isEquation && 
-                        ! isGroup && 
-                        ! isPicture);
+                        (!isText &&
+                        !isBibliography &&
+                        !isCitation &&
+                        !isComboBox &&
+                        !isDate &&
+                        !isDocPartList &&
+                        !isDocPartObj &&
+                        !isDropDownList &&
+                        !isEquation &&
+                        !isGroup &&
+                        !isPicture);
                     string type = null;
-                    if (isText        ) type = "Text";
+                    if (isText) type = "Text";
                     if (isBibliography) type = "Bibliography";
-                    if (isCitation    ) type = "Citation";
-                    if (isComboBox    ) type = "ComboBox";
-                    if (isDate        ) type = "Date";
-                    if (isDocPartList ) type = "DocPartList";
-                    if (isDocPartObj  ) type = "DocPartObj";
+                    if (isCitation) type = "Citation";
+                    if (isComboBox) type = "ComboBox";
+                    if (isDate) type = "Date";
+                    if (isDocPartList) type = "DocPartList";
+                    if (isDocPartObj) type = "DocPartObj";
                     if (isDropDownList) type = "DropDownList";
-                    if (isEquation    ) type = "Equation";
-                    if (isGroup       ) type = "Group";
-                    if (isPicture     ) type = "Picture";
-                    if (isRichText    ) type = "RichText";
+                    if (isEquation) type = "Equation";
+                    if (isGroup) type = "Group";
+                    if (isPicture) type = "Picture";
+                    if (isRichText) type = "RichText";
                     var typeAttr = new XAttribute(H.Type, type);
 
                     return new XElement(H.ContentControl,
